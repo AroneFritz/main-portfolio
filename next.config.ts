@@ -1,12 +1,19 @@
 import type { NextConfig } from "next";
 import withPWA from "next-pwa";
 
+const isStaticExport = process.env.NEXT_EXPORT === 'true';
+
 const nextConfig: NextConfig = {
   // Only enable export for static builds, not development
-  ...(process.env.NEXT_EXPORT === 'true' && { output: 'export' }),
+  ...(isStaticExport && {
+    output: 'export',
+    distDir: 'out',
+    // Skip API routes during static export
+    generateBuildId: () => 'static-build',
+  }),
   trailingSlash: true,
-  basePath: process.env.NODE_ENV === 'production' && process.env.NEXT_EXPORT === 'true' ? '/main-portfolio' : '',
-  assetPrefix: process.env.NODE_ENV === 'production' && process.env.NEXT_EXPORT === 'true' ? '/main-portfolio/' : '',
+  basePath: process.env.NODE_ENV === 'production' && isStaticExport ? '/main-portfolio' : '',
+  assetPrefix: process.env.NODE_ENV === 'production' && isStaticExport ? '/main-portfolio/' : '',
   eslint: {
     ignoreDuringBuilds: true, // Disable ESLint during builds for static export
   },
@@ -64,8 +71,6 @@ const nextConfig: NextConfig = {
 };
 
 // Disable PWA for static export, enable for development/server builds
-const isStaticExport = process.env.NODE_ENV === 'production' && process.env.NEXT_EXPORT === 'true';
-
 const pwaConfig = isStaticExport ?
   (config: NextConfig) => config : // No PWA for static export
   withPWA({
