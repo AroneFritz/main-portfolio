@@ -2,8 +2,6 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 
-export const dynamic = 'force-static';
-
 // GET endpoint to fetch published projects
 export async function GET() {
   try {

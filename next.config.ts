@@ -1,38 +1,20 @@
 import type { NextConfig } from "next";
 import withPWA from "next-pwa";
 
-const isStaticExport = process.env.NEXT_EXPORT === 'true';
-
 const nextConfig: NextConfig = {
-  // Only enable export for static builds, not development
-  ...(isStaticExport && {
-    output: 'export',
-    distDir: 'out',
-    trailingSlash: true,
-    basePath: '/main-portfolio',
-    assetPrefix: '/main-portfolio/',
-    // Skip API routes during static export
-    generateBuildId: () => 'static-build',
-  }),
-  // For development and server builds
-  ...(!isStaticExport && {
-    trailingSlash: true,
-  }),
+  // Vercel deployment configuration
+  trailingSlash: false, // Vercel handles this automatically
   eslint: {
-    ignoreDuringBuilds: true, // Disable ESLint during builds for static export
+    ignoreDuringBuilds: false, // Enable ESLint for better code quality
   },
   typescript: {
-    ignoreBuildErrors: true, // Disable TypeScript errors during builds for static export
+    ignoreBuildErrors: false, // Enable TypeScript checking
   },
   experimental: {
     optimizePackageImports: ["lucide-react", "framer-motion"],
   },
-  // Disable PWA for static export
-  ...(process.env.NODE_ENV === 'production' && {
-    generateBuildId: () => 'build',
-  }),
   images: {
-    unoptimized: true, // Required for static export
+    unoptimized: false, // Vercel supports optimized images
     remotePatterns: [
       {
         protocol: 'https',
@@ -42,93 +24,92 @@ const nextConfig: NextConfig = {
         protocol: 'http',
         hostname: 'localhost',
       },
+      {
+        protocol: 'https',
+        hostname: '*.vercel.app', // Allow Vercel domains
+      },
     ],
     formats: ["image/webp", "image/avif"],
     dangerouslyAllowSVG: true,
     contentDispositionType: 'attachment',
     contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
   },
-  // Headers don't work with static export, so we'll skip them for GitHub Pages
-  ...(process.env.NEXT_EXPORT !== 'true' && {
-    async headers() {
-      return [
-        {
-          source: "/(.*)",
-          headers: [
-            {
-              key: "X-Frame-Options",
-              value: "DENY",
-            },
-            {
-              key: "X-Content-Type-Options",
-              value: "nosniff",
-            },
-            {
-              key: "Referrer-Policy",
-              value: "strict-origin-when-cross-origin",
-            },
-          ],
-        },
-      ];
-    },
-  }),
+  async headers() {
+    return [
+      {
+        source: "/(.*)",
+        headers: [
+          {
+            key: "X-Frame-Options",
+            value: "DENY",
+          },
+          {
+            key: "X-Content-Type-Options",
+            value: "nosniff",
+          },
+          {
+            key: "Referrer-Policy",
+            value: "strict-origin-when-cross-origin",
+          },
+        ],
+      },
+    ];
+  },
 };
 
-// Disable PWA for static export, enable for development/server builds
-const pwaConfig = isStaticExport ?
-  (config: NextConfig) => config : // No PWA for static export
-  withPWA({
-    dest: "public",
-    register: true,
-    skipWaiting: true,
-    disable: process.env.NODE_ENV === "development",
-    buildExcludes: [/middleware-manifest\.json$/],
-    runtimeCaching: [
-      {
-        urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
-        handler: "CacheFirst",
-        options: {
-          cacheName: "google-fonts",
-          expiration: {
-            maxEntries: 4,
-            maxAgeSeconds: 365 * 24 * 60 * 60, // 365 days
-          },
+// PWA configuration for Vercel deployment
+const pwaConfig = withPWA({
+  dest: "public",
+  register: true,
+  skipWaiting: true,
+  disable: process.env.NODE_ENV === "development",
+  buildExcludes: [/middleware-manifest\.json$/],
+  runtimeCaching: [
+    {
+      urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
+      handler: "CacheFirst",
+      options: {
+        cacheName: "google-fonts",
+        expiration: {
+          maxEntries: 4,
+          maxAgeSeconds: 365 * 24 * 60 * 60, // 365 days
         },
       },
-      {
-        urlPattern: /^https:\/\/fonts\.gstatic\.com\/.*/i,
-        handler: "CacheFirst",
-        options: {
-          cacheName: "google-fonts-static",
-          expiration: {
-            maxEntries: 4,
-            maxAgeSeconds: 365 * 24 * 60 * 60, // 365 days
-          },
+    },
+    {
+      urlPattern: /^https:\/\/fonts\.gstatic\.com\/.*/i,
+      handler: "CacheFirst",
+      options: {
+        cacheName: "google-fonts-static",
+        expiration: {
+          maxEntries: 4,
+          maxAgeSeconds: 365 * 24 * 60 * 60, // 365 days
         },
       },
-      {
-        urlPattern: /\.(?:jpg|jpeg|gif|png|svg|ico|webp)$/i,
-        handler: "StaleWhileRevalidate",
-        options: {
-          cacheName: "static-image-assets",
-          expiration: {
-            maxEntries: 64,
-            maxAgeSeconds: 24 * 60 * 60, // 24 hours
-          },
+    },
+    {
+      urlPattern: /\.(?:jpg|jpeg|gif|png|svg|ico|webp)$/i,
+      handler: "StaleWhileRevalidate",
+      options: {
+        cacheName: "static-image-assets",
+        expiration: {
+          maxEntries: 64,
+          maxAgeSeconds: 24 * 60 * 60, // 24 hours
         },
       },
-      {
-        urlPattern: /\.(?:js|css)$/i,
-        handler: "StaleWhileRevalidate",
-        options: {
-          cacheName: "static-resources",
-          expiration: {
-            maxEntries: 32,
-            maxAgeSeconds: 24 * 60 * 60, // 24 hours
-          },
+    },
+    {
+      urlPattern: /\.(?:js|css)$/i,
+      handler: "StaleWhileRevalidate",
+      options: {
+        cacheName: "static-resources",
+        expiration: {
+          maxEntries: 32,
+          maxAgeSeconds: 24 * 60 * 60, // 24 hours
         },
       },
-    ],
-  });
+    },
+  ],
+});
 
 export default pwaConfig(nextConfig);

@@ -3,8 +3,6 @@ import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { requireAuth } from "@/lib/auth";
 
-export const dynamic = 'force-static';
-
 // GET all testimonials (admin only)
 export async function GET(request: NextRequest) {
   try {
