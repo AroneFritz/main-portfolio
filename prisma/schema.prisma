@@ -1,0 +1,97 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Testimonial {
+  id              String   @id @default(cuid())
+  name            String
+  email           String
+  position        String
+  company         String
+  content         String
+  rating          Int
+  projectWorkedOn String?
+  allowContact    Boolean  @default(true)
+  status          Status   @default(PENDING)
+  submissionDate  DateTime @default(now())
+  approvalDate    DateTime?
+  image           String?
+  featured        Boolean  @default(false)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@map("testimonials")
+}
+
+model Admin {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String
+  name      String
+  role      Role     @default(ADMIN)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("admins")
+}
+
+model Project {
+  id              String          @id @default(cuid())
+  title           String
+  description     String
+  longDescription String?
+  image           String
+  images          String?         // JSON array of image paths
+  technologies    String          // JSON array of technologies
+  category        ProjectCategory
+  featured        Boolean         @default(false)
+  githubUrl       String?
+  liveUrl         String?
+  status          ProjectStatus   @default(COMPLETED)
+  startDate       String
+  endDate         String?
+  challenges      String?         // JSON array of challenges
+  learnings       String?         // JSON array of learnings
+  metrics         String?         // JSON array of metrics
+  order           Int             @default(0)
+  published       Boolean         @default(true)
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+
+  @@map("projects")
+}
+
+enum Status {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum Role {
+  ADMIN
+  SUPER_ADMIN
+}
+
+enum ProjectCategory {
+  WEB_APP
+  MOBILE_APP
+  API
+  LIBRARY
+  TOOL
+  GAME
+  OTHER
+}
+
+enum ProjectStatus {
+  COMPLETED
+  IN_PROGRESS
+  PLANNED
+}
