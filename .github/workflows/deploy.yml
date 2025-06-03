@@ -1,10 +1,8 @@
-name: Deploy to GitHub Pages
+name: "[DISABLED] Deploy to GitHub Pages"
 
 on:
-  push:
-    branches: [ main ]
-  pull_request:
-    branches: [ main ]
+  # Disabled - now deploying to Vercel instead
+  workflow_dispatch: # Manual trigger only (for testing if needed)
 
 jobs:
   build-and-deploy:
