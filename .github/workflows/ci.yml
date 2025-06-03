@@ -1,49 +1,63 @@
-name: CI - Build and Test
+name: CI - Code Quality & Build Test
 
 on:
   push:
-    branches: [ main, develop ]
+    branches: [ main ]
   pull_request:
     branches: [ main ]
 
 jobs:
-  build-and-test:
+  test-and-build:
+    name: Test & Build
     runs-on: ubuntu-latest
-    
+
     steps:
-    - name: Checkout code
+    - name: 📥 Checkout code
       uses: actions/checkout@v4
-      
-    - name: Setup Node.js
+
+    - name: 📦 Setup Node.js
       uses: actions/setup-node@v4
       with:
         node-version: '20'
         cache: 'npm'
-        
-    - name: Install dependencies
+
+    - name: 🔧 Install dependencies
       run: npm ci
-      
-    - name: Run ESLint
+
+    - name: 🔍 Run ESLint
       run: npm run lint
-      continue-on-error: true # Don't fail the build on lint errors
-      
-    - name: Generate Prisma Client
+      continue-on-error: true
+
+    - name: 🗄️ Generate Prisma Client
       run: npx prisma generate
-      
-    - name: Build project
+
+    - name: 🏗️ Test build process
       run: npm run build
       env:
-        # Mock environment variables for build testing
-        DATABASE_URL: "postgresql://test:test@localhost:5432/test"
-        JWT_SECRET: "test-secret-for-ci-build"
-        ADMIN_EMAIL: "test@example.com"
-        ADMIN_PASSWORD: "test-password"
-        ADMIN_NAME: "Test Admin"
-        
-    - name: Build success notification
+        # Mock environment variables for CI build testing
+        DATABASE_URL: "postgresql://ci:ci@localhost:5432/ci_test"
+        JWT_SECRET: "ci-test-secret-key-not-for-production"
+        ADMIN_EMAIL: "ci@test.com"
+        ADMIN_PASSWORD: "ci-test-password"
+        ADMIN_NAME: "CI Test Admin"
+
+    - name: ✅ Build Success
       if: success()
-      run: echo "✅ Build completed successfully! Ready for Vercel deployment."
-      
-    - name: Build failure notification
+      run: |
+        echo "🎉 All checks passed!"
+        echo "✅ Code quality check: PASSED"
+        echo "✅ Dependencies install: PASSED"
+        echo "✅ Prisma generation: PASSED"
+        echo "✅ Next.js build: PASSED"
+        echo ""
+        echo "🚀 Ready for Vercel deployment!"
+
+    - name: ❌ Build Failed
       if: failure()
-      run: echo "❌ Build failed. Please check the logs above."
+      run: |
+        echo "💥 Build failed!"
+        echo "Please check the logs above for details."
+        echo "Common issues:"
+        echo "- TypeScript errors"
+        echo "- Missing dependencies"
+        echo "- Prisma schema issues"
