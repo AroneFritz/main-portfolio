@@ -8,12 +8,16 @@ const nextConfig: NextConfig = {
   ...(isStaticExport && {
     output: 'export',
     distDir: 'out',
+    trailingSlash: true,
+    basePath: '/main-portfolio',
+    assetPrefix: '/main-portfolio/',
     // Skip API routes during static export
     generateBuildId: () => 'static-build',
   }),
-  trailingSlash: true,
-  basePath: process.env.NODE_ENV === 'production' && isStaticExport ? '/main-portfolio' : '',
-  assetPrefix: process.env.NODE_ENV === 'production' && isStaticExport ? '/main-portfolio/' : '',
+  // For development and server builds
+  ...(!isStaticExport && {
+    trailingSlash: true,
+  }),
   eslint: {
     ignoreDuringBuilds: true, // Disable ESLint during builds for static export
   },

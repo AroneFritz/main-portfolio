@@ -4,6 +4,8 @@ import { prisma } from "@/lib/prisma";
 import { writeFile, mkdir } from "fs/promises";
 import path from "path";
 
+export const dynamic = 'force-static';
+
 // GET endpoint to fetch approved testimonials
 export async function GET() {
   try {
